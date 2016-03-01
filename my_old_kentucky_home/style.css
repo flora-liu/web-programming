@@ -1,0 +1,29 @@
+/* COMP 20 Lab 5
+ * style.css
+ * By Flora Liu 
+ * Mar 1, 2016 */
+
+@font-face {
+    font-family: 'Lato';
+    src: url('Lato-Regular.ttf');
+}
+
+* {
+    font-family: 'Lato';
+    background-color: black;
+    color: white;
+    text-align: center;
+}
+
+h1 {
+	font-size: 50px;
+}
+
+#music_video {
+	display: block;
+	margin: 0 auto;
+}
+
+#lyrics {
+	padding: 30px 0;
+}

@@ -1,0 +1,96 @@
+<!-- COMP 20 Lab 5 -->
+<!-- index.html    -->
+<!-- By Flora Liu  -->
+<!-- Mar 1, 2016   -->
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>My Old Kentucky Home</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+<h1 id="title">My Old Kentucky Home</h1>
+
+<video src="https://www.cs.tufts.edu/comp/20/my_old_kentucky_home.mp4" id="music_video" controls></video>
+<div id="lyrics"></div>
+
+<script>
+	// Complete this section and create a CSS file named style.css
+	var tit = document.getElementById("title");
+	var vid = document.getElementById("music_video");
+	var lyr = document.getElementById("lyrics");
+
+	tit.innerHTML = '<h1>My Old Kentucky Home  <img src="horse_emoji.png" alt="Horse Emoji" height="50px" width="auto"> <img src="puff_emoji.png" alt="Puff Emoji" height="50px" width="auto">';
+
+	vid.addEventListener("timeupdate", function() {
+		if (vid.currentTime >= 0 && vid.currentTime <= 3) {
+			lyr.innerHTML = '<img src="nbc_logo.png" alt="NBC Logo" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 3 && vid.currentTime <= 6) {
+			lyr.innerHTML = "(An anti-slavery ballad written by Stephen Foster)";
+		}
+
+		if (vid.currentTime >= 7 && vid.currentTime <= 15) {
+			lyr.innerHTML = '<p>The sun shines bright in My Old Kentucky Home,</p> <img src="sun.png" alt="Sun Emoji" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 15 && vid.currentTime <= 22) {
+			lyr.innerHTML = '<p>Tis summer, the people are gay; </p> <img src="rainbow.png" alt="Rainbow" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 22 && vid.currentTime <= 28) {
+			lyr.innerHTML = '<p>The corn-tops ripe and the meadows in the bloom</p> <img src="flower.png" alt="Flower Emoji" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 28 && vid.currentTime <= 35) {
+			lyr.innerHTML = '<p>While the birds make music all the day.</p> <img src="bird.png" alt="Bird Emoji" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 36 && vid.currentTime <= 42) {
+			lyr.innerHTML = "The young folks roll on the little cabin floor,";
+		}
+
+		if (vid.currentTime >= 42 && vid.currentTime <= 48) {
+			lyr.innerHTML = "All merry, all happy and bright;";
+		}
+
+		if (vid.currentTime >= 48 && vid.currentTime <= 55) {
+			lyr.innerHTML = '<p>By n by hard times comes a knocking at the door,</p> <img src="door.png" alt="Door Emoji" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 55 && vid.currentTime <= 63) {
+			lyr.innerHTML = '<p>Then My Old Kentucky Home, good night!</p> <img src="night.png" alt="Night Emoji" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 63 && vid.currentTime <= 69) {
+			lyr.innerHTML = "Weep no more my lady";
+		}
+
+		if (vid.currentTime >= 69 && vid.currentTime <= 76) {
+			lyr.innerHTML = "Oh weep no more today;";
+		}
+
+		if (vid.currentTime >= 76 && vid.currentTime <= 80) {
+			lyr.innerHTML = '<p>TWe will sing one song</p> <img src="music.png" alt="Music Emoji" height="50px" width="auto">';
+		}
+
+		if (vid.currentTime >= 80 && vid.currentTime <= 83) {
+			lyr.innerHTML = "For My Old Kentucky Home";
+		}
+
+		if (vid.currentTime >= 83 && vid.currentTime <= 89) {
+			lyr.innerHTML = "For My Old Kentucky Home, far away.";
+		}
+
+		if (vid.currentTime > 89) {
+			lyr.innerHTML = '<img src="usa.png" alt="USA Flag" height="50px" width="auto">';
+		}
+	});
+</script>
+</body>
+</html>	
