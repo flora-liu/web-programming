@@ -14,7 +14,6 @@ function parse() {
 		if (request.readyState == 4 && request.status == 200) {
 			raw = request.responseText;
 			theMessageData = JSON.parse(raw);
-			console.log(theMessageData);
 			elem = document.getElementById("messages");
 			for (i = 0; i < theMessageData.length; i++) {
 				elem.innerHTML += "<p>" + theMessageData[i]["content"] + " " + theMessageData[i]["username"] + "</p>";
