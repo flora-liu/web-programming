@@ -11,7 +11,6 @@
     <script>
       var myLat = 0;
       var myLng = 0;
-      var request = new XMLHttpRequest();
       var me = new google.maps.LatLng(myLat, myLng);
       var myOptions = {
             zoom: 13, // The larger the zoom number, the bigger the zoom
@@ -34,13 +33,14 @@
             myLat = position.coords.latitude;
             myLng = position.coords.longitude;
             renderMap();
-            //storeLocation();
+            sendLocation();
           });
         }
         else {
           alert("Geolocation is not supported by your web browser.  What a shame!");
         }
       }
+
       function renderMap()
       {
         me = new google.maps.LatLng(myLat, myLng);
@@ -62,17 +62,30 @@
         });
       }
 
-      /*function storeLocation()
+      function sendLocation()
       {
+        // Make request
+        var request = new XMLHttpRequest();
         var url = "https://defense-in-derpth.herokuapp.com/sendLocation";
-        var params = "login=YOURLOGIN&lat=YOUR_LATITUDE&lng=YOUR_LONGITUDE";
-        http.open("POST", url, true);
+        var params ="login=GAIL_MCMILLAN&lat=" + myLat + "&lng=" + myLng;
 
-        //Send the proper header information along with the request
-        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        http.setRequestHeader("Content-length", params.length);
-        http.setRequestHeader("Connection", "close");
-      }*/
+        // Send information
+        request.open("POST", url, true);
+        request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        
+        // Handle response
+        request.onreadystatechange = function() {
+          if(request.readyState == 1){
+            console.log("Status 1: Server connection established!");
+          }
+          if (request.readyState == 4 && request.status == 200) {
+            raw = request.responseText;
+            console.log(raw); // DELETE THIS BEFORE SUBMITTING
+            theMessageData = JSON.parse(raw);
+          }
+        }
+        request.send(params);
+      }
     </script>
   </head>
   
