@@ -7,6 +7,7 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=true"></script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
     
     <script>
       var request;
@@ -16,7 +17,7 @@
       var myLng = 0;
       var me = new google.maps.LatLng(myLat, myLng);
       var myOptions = {
-            zoom: 16, // The larger the zoom number, the bigger the zoom
+            zoom: 15, // The larger the zoom number, the bigger the zoom
             center: me,
             mapTypeId: google.maps.MapTypeId.ROADMAP
           };
@@ -34,27 +35,38 @@
       var lWindows = [];
       var lDistance = [];
       var lContentString = [];
-      var R = 6371; // km 
+      var R = 6371; // Kilometers 
+      var closestLandmark = 1000000;
+      var closetIndex = 0;
+      var landmarkPath;
+      var closestLat = 0;
+      var closestLng = 0;
+      var infowindow = new google.maps.InfoWindow({
+        disableAutoPan: true
+      });
 
       // Set special icons for different markers
       var meIcon = {
         url: "pizza_resized.png",
         size: new google.maps.Size(50, 50),
         origin: new google.maps.Point(0, 0),
-        anchor: new google.maps.Point(0, 0)
+        anchor: new google.maps.Point(34, 47)
       };
+
       var peopleIcon = {
         url: "banana_resized.png",
         size: new google.maps.Size(50, 50),
         origin: new google.maps.Point(0, 0),
         anchor: new google.maps.Point(0, 0)
       };
+
       var landmarkIcon = {
         url: "pin_resized.png",
         size: new google.maps.Size(50, 50),
         origin: new google.maps.Point(0, 0),
-        anchor: new google.maps.Point(0, 0)
+        anchor: new google.maps.Point(26, 47)
       };
+
       var shape = {
         coords: [1, 1, 1, 20, 18, 20, 18, 1],
         type: 'poly'
@@ -62,14 +74,16 @@
       
       function init()
       {
-        map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+        map = new google.maps.Map(document.getElementById("map_canvas"), myOptions); // Create map
         getMyLocation();
 
       }
       
       // Retrieve current Location
       function getMyLocation() {
-        if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
+
+        // Check if the navigator.geolocation object is supported on your browser
+        if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             myLat = position.coords.latitude;
             myLng = position.coords.longitude;
@@ -84,12 +98,10 @@
       // Store location and retrieve other peoples' locations
       function sendLocation()
       {
-        // Make request
+        // Make HTTP POST request
         request = new XMLHttpRequest();
         url = "https://defense-in-derpth.herokuapp.com/sendLocation";
         params ="login=GAIL_MCMILLAN&lat=" + myLat + "&lng=" + myLng;
-
-        // Send information
         request.open("POST", url, true);
         request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         
@@ -106,83 +118,108 @@
       // Update map with people and landmark markers
       function renderMap()
       {
+        // My current location
         me = new google.maps.LatLng(myLat, myLng);
         
         // Update map and go there...
         map.panTo(me);
 
-        // Create a marker
-        marker = new google.maps.Marker({
-          position: me,
-          animation: google.maps.Animation.DROP,
-          map: map,
-          icon: meIcon,
-          shape: shape,
-          title: "Current Location",
-          zIndex: 999
-        });
-        marker.setMap(map);
-          
-        // Open info window on click of marker
-        google.maps.event.addListener(marker, 'click', function() {
-          infowindow.setContent(marker.title);
-          infowindow.open(map, marker);
-        });
-
         // Store people and landmarks list
         people = locationData.people;
         landmarks = locationData.landmarks;
-        console.log(landmarks); // DELETE THIS BEFORE SUBMITTING!
         
         // Make markers on map for other people
         for (i = 0; i < people.length; i++) {
+
+          // Check if this is myself, if so- don't need to show
+          if (people[i].lat == myLat && people[i].lng == myLng) { continue; }
+
+          // Create marker for people
           pMarkers[i] = new google.maps.Marker({
             position: new google.maps.LatLng(people[i].lat, people[i].lng),
             animation: google.maps.Animation.DROP,
             map: map,
             icon: peopleIcon,
             shape: shape,
-            title: people[i].login,
+            title: people[i].login + "</br>Latitude: " + people[i].lat + "</br>Longitude: " + people[i].lng + "</br>" + calcDistance(people[i].lat, people[i].lng) + " miles away",
             zIndex: i
           });
+
+          // Set person marker on map
           pMarkers[i].setMap(map);
-          pWindows[i] = new google.maps.InfoWindow({
-            disableAutoPan: true
+
+          // Create info window for person
+          google.maps.event.addListener(pMarkers[i], 'click', function() {
+            infowindow.setContent(this.title);
+            infowindow.open(map, this);
           });
-          pDistance[i] = calcDistance(people[i].lat, people[i].lng);
-          pContentString[i] = people[i].login + "</br>" + pDistance[i] + " miles away";
-          pWindows[i].setContent(pContentString[i]);
-          //google.maps.event.addListener(pMarkers[i], 'click', function () {
-            pWindows[i].open(map, pMarkers[i]);
-          //});
         }
         
-      // Make markers for landmarks that are within 1 mile of current location
+        // Make markers for landmarks that are within 1 mile of current location
         for (i = 0; i < landmarks.length; i++) {
+
+          // Look for closest landmark by comparing distance
+          lDistance[i] = calcDistance(landmarks[i]["geometry"]["coordinates"][1], landmarks[i]["geometry"]["coordinates"][0]);
+          if (lDistance[i] < closestLandmark) {
+            closestLandmark = lDistance[i];
+            closestIndex = i;
+          }
+
+          // Create marker for landmark
           lMarkers[i] = new google.maps.Marker({
             position: new google.maps.LatLng(landmarks[i]["geometry"]["coordinates"][1], landmarks[i]["geometry"]["coordinates"][0]),
             animation: google.maps.Animation.DROP,
             map: map,
             icon: landmarkIcon,
             shape: shape,
-            title: landmarks[i].properties.Location_Name,
+            title: landmarks[i].properties.Location_Name + "</br>Latitude: " + landmarks[i]["geometry"]["coordinates"][1] + "</br>Longitude: " + landmarks[i]["geometry"]["coordinates"][0] + "</br>" + lDistance[i] + " miles away",
             zIndex: i
           });
           lMarkers[i].setMap(map);
-          lWindows[i] = new google.maps.InfoWindow({
-            disableAutoPan: true
-          });
-          lDistance[i] = calcDistance(landmarks[i]["geometry"]["coordinates"][1], landmarks[i]["geometry"]["coordinates"][0]);
-          lContentString[i] = landmarks[i].properties.Location_Name + "</br>" + lDistance[i] + " miles away";
-          lWindows[i].setContent(lContentString[i]);
-          //google.maps.event.addListener(lMarkers[i], 'click', function () {
-            lWindows[i].open(map, lMarkers[i]);
-          //});
-        }
-      
-    }
 
-      // Using the Haversine formula to find distance between 2 points
+          // Create info window for landmark
+          google.maps.event.addListener(lMarkers[i], 'click', function() {
+            infowindow.setContent(this.title);
+            infowindow.open(map, this);
+          });
+        }
+
+        // Create a marker for current location (myself)
+        meMarker = new google.maps.Marker({
+          position: me,
+          animation: google.maps.Animation.DROP,
+          map: map,
+          icon: meIcon,
+          shape: shape,
+          title: "Current Location </br>Latitude: " + myLat + "</br>Longitude: " + myLng + "<br> Closest landmark: " + landmarks[closestIndex].properties.Location_Name + "</br> Distance from landmark: " + closestLandmark + " miles",
+          zIndex: 999
+        });
+        meMarker.setMap(map);
+          
+        // Open info window on click of marker for current location
+        google.maps.event.addListener(meMarker, 'click', function() {
+          infowindow.setContent(meMarker.title);
+          infowindow.open(map, meMarker);
+        });
+
+        // Create line to closest landmark
+        closestLat = landmarks[closestIndex]["geometry"]["coordinates"][1];
+        closestLng = landmarks[closestIndex]["geometry"]["coordinates"][0];
+        closestLandmarkPath = [
+          {lat: myLat, lng: myLng},
+          {lat: closestLat, lng: closestLng}
+        ];
+        landmarkPath = new google.maps.Polyline({
+          path: closestLandmarkPath,
+          geodesic: true,
+          strokeColor: "#000000",
+          strokeOpacity: 1.0,
+          strokeWeight: 4
+        });
+        landmarkPath.setMap(map);
+      }
+
+      // Use the Haversine formula to find distance between 2 points
       function calcDistance(lat, lng) {
         Number.prototype.toRad = function() {
            return this * Math.PI / 180;
