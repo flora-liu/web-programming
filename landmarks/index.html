@@ -9,31 +9,71 @@
     <link rel="stylesheet" href="style.css" />
     
     <script>
+      var request;
+      var url;
+      var params;
       var myLat = 0;
       var myLng = 0;
       var me = new google.maps.LatLng(myLat, myLng);
       var myOptions = {
-            zoom: 13, // The larger the zoom number, the bigger the zoom
+            zoom: 16, // The larger the zoom number, the bigger the zoom
             center: me,
             mapTypeId: google.maps.MapTypeId.ROADMAP
           };
       var map;
       var marker;
       var infowindow = new google.maps.InfoWindow();
+      var locationData;
+      var people =  [];
+      var landmarks = [];
+      var pMarkers = [];
+      var pWindows = [];
+      var pDistance = [];
+      var pContentString = [];
+      var lMarkers = [];
+      var lWindows = [];
+      var lDistance = [];
+      var lContentString = [];
+      var R = 6371; // km 
+
+      // Set special icons for different markers
+      var meIcon = {
+        url: "pizza_resized.png",
+        size: new google.maps.Size(50, 50),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(0, 0)
+      };
+      var peopleIcon = {
+        url: "banana_resized.png",
+        size: new google.maps.Size(50, 50),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(0, 0)
+      };
+      var landmarkIcon = {
+        url: "pin_resized.png",
+        size: new google.maps.Size(50, 50),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(0, 0)
+      };
+      var shape = {
+        coords: [1, 1, 1, 20, 18, 20, 18, 1],
+        type: 'poly'
+      };
       
       function init()
       {
         map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
         getMyLocation();
+
       }
       
+      // Retrieve current Location
       function getMyLocation() {
         if (navigator.geolocation) { // the navigator.geolocation object is supported on your browser
           navigator.geolocation.getCurrentPosition(function(position) {
             myLat = position.coords.latitude;
             myLng = position.coords.longitude;
-            renderMap();
-            sendLocation();
+            sendLocation();          
           });
         }
         else {
@@ -41,17 +81,45 @@
         }
       }
 
+      // Store location and retrieve other peoples' locations
+      function sendLocation()
+      {
+        // Make request
+        request = new XMLHttpRequest();
+        url = "https://defense-in-derpth.herokuapp.com/sendLocation";
+        params ="login=GAIL_MCMILLAN&lat=" + myLat + "&lng=" + myLng;
+
+        // Send information
+        request.open("POST", url, true);
+        request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        
+        // Handle response
+        request.onreadystatechange = function() {
+          if (request.readyState == 4 && request.status == 200) {
+            locationData = JSON.parse(request.responseText);
+            renderMap();
+          }
+        }
+        request.send(params);
+      }
+
+      // Update map with people and landmark markers
       function renderMap()
       {
         me = new google.maps.LatLng(myLat, myLng);
         
         // Update map and go there...
         map.panTo(me);
-  
+
         // Create a marker
         marker = new google.maps.Marker({
           position: me,
-          title: "Here I Am!"
+          animation: google.maps.Animation.DROP,
+          map: map,
+          icon: meIcon,
+          shape: shape,
+          title: "Current Location",
+          zIndex: 999
         });
         marker.setMap(map);
           
@@ -60,32 +128,88 @@
           infowindow.setContent(marker.title);
           infowindow.open(map, marker);
         });
-      }
 
-      function sendLocation()
-      {
-        // Make request
-        var request = new XMLHttpRequest();
-        var url = "https://defense-in-derpth.herokuapp.com/sendLocation";
-        var params ="login=GAIL_MCMILLAN&lat=" + myLat + "&lng=" + myLng;
-
-        // Send information
-        request.open("POST", url, true);
-        request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        // Store people and landmarks list
+        people = locationData.people;
+        landmarks = locationData.landmarks;
+        console.log(landmarks); // DELETE THIS BEFORE SUBMITTING!
         
-        // Handle response
-        request.onreadystatechange = function() {
-          if(request.readyState == 1){
-            console.log("Status 1: Server connection established!");
-          }
-          if (request.readyState == 4 && request.status == 200) {
-            raw = request.responseText;
-            console.log(raw); // DELETE THIS BEFORE SUBMITTING
-            theMessageData = JSON.parse(raw);
-          }
+        // Make markers on map for other people
+        for (i = 0; i < people.length; i++) {
+          pMarkers[i] = new google.maps.Marker({
+            position: new google.maps.LatLng(people[i].lat, people[i].lng),
+            animation: google.maps.Animation.DROP,
+            map: map,
+            icon: peopleIcon,
+            shape: shape,
+            title: people[i].login,
+            zIndex: i
+          });
+          pMarkers[i].setMap(map);
+          pWindows[i] = new google.maps.InfoWindow({
+            disableAutoPan: true
+          });
+          pDistance[i] = calcDistance(people[i].lat, people[i].lng);
+          pContentString[i] = people[i].login + "</br>" + pDistance[i] + " miles away";
+          pWindows[i].setContent(pContentString[i]);
+          //google.maps.event.addListener(pMarkers[i], 'click', function () {
+            pWindows[i].open(map, pMarkers[i]);
+          //});
         }
-        request.send(params);
+        
+      // Make markers for landmarks that are within 1 mile of current location
+        for (i = 0; i < landmarks.length; i++) {
+          lMarkers[i] = new google.maps.Marker({
+            position: new google.maps.LatLng(landmarks[i]["geometry"]["coordinates"][1], landmarks[i]["geometry"]["coordinates"][0]),
+            animation: google.maps.Animation.DROP,
+            map: map,
+            icon: landmarkIcon,
+            shape: shape,
+            title: landmarks[i].properties.Location_Name,
+            zIndex: i
+          });
+          lMarkers[i].setMap(map);
+          lWindows[i] = new google.maps.InfoWindow({
+            disableAutoPan: true
+          });
+          lDistance[i] = calcDistance(landmarks[i]["geometry"]["coordinates"][1], landmarks[i]["geometry"]["coordinates"][0]);
+          lContentString[i] = landmarks[i].properties.Location_Name + "</br>" + lDistance[i] + " miles away";
+          lWindows[i].setContent(lContentString[i]);
+          //google.maps.event.addListener(lMarkers[i], 'click', function () {
+            lWindows[i].open(map, lMarkers[i]);
+          //});
+        }
+      
+    }
+
+      // Using the Haversine formula to find distance between 2 points
+      function calcDistance(lat, lng) {
+        Number.prototype.toRad = function() {
+           return this * Math.PI / 180;
+        }
+        var lat2 = myLat; 
+        var lon2 = myLng; 
+        var lat1 = lat; 
+        var lon1 = lng; 
+        var x1 = lat2-lat1;
+        var dLat = x1.toRad();  
+        var x2 = lon2-lon1;
+        var dLon = x2.toRad();  
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+                        Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
+                        Math.sin(dLon/2) * Math.sin(dLon/2);  
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        var d = R * c;
+        return floorFigure(d, 2);;
       }
+
+      // Round numbers to two decimals
+      function floorFigure(figure, decimals){
+        if (!decimals) decimals = 2;
+        var d = Math.pow(10,decimals);
+        return (parseInt(figure*d)/d).toFixed(decimals);
+      };
+
     </script>
   </head>
   
