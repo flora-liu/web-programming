@@ -130,7 +130,7 @@
         for (i = 0; i < people.length; i++) {
 
           // Check if this is myself, if so- don't need to show
-          if (people[i].lat == myLat && people[i].lng == myLng) { continue; }
+          if (people[i].login == "GAIL_MCMILLAN") { continue; }
 
           // Create marker for people
           pMarkers[i] = new google.maps.Marker({
@@ -170,7 +170,7 @@
             map: map,
             icon: landmarkIcon,
             shape: shape,
-            title: landmarks[i].properties.Location_Name + "</br>Latitude: " + landmarks[i]["geometry"]["coordinates"][1] + "</br>Longitude: " + landmarks[i]["geometry"]["coordinates"][0] + "</br>" + lDistance[i] + " miles away",
+            title: landmarks[i].properties.Details + lDistance[i] + " miles away",
             zIndex: i
           });
           lMarkers[i].setMap(map);
