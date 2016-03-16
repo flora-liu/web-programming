@@ -198,23 +198,22 @@
         google.maps.event.addListener(meMarker, 'click', function() {
           infowindow.setContent(meMarker.title);
           infowindow.open(map, meMarker);
-        });
-
-        // Create line to closest landmark
-        closestLat = landmarks[closestIndex]["geometry"]["coordinates"][1];
-        closestLng = landmarks[closestIndex]["geometry"]["coordinates"][0];
-        closestLandmarkPath = [
+          // Create line to closest landmark
+          closestLat = landmarks[closestIndex]["geometry"]["coordinates"][1];
+          closestLng = landmarks[closestIndex]["geometry"]["coordinates"][0];
+          closestLandmarkPath = [
           {lat: myLat, lng: myLng},
           {lat: closestLat, lng: closestLng}
-        ];
-        landmarkPath = new google.maps.Polyline({
-          path: closestLandmarkPath,
-          geodesic: true,
-          strokeColor: "#000000",
-          strokeOpacity: 1.0,
-          strokeWeight: 4
+          ];
+          landmarkPath = new google.maps.Polyline({
+            path: closestLandmarkPath,
+            geodesic: true,
+            strokeColor: "#000000",
+            strokeOpacity: 1.0,
+            strokeWeight: 4
+          });
+          landmarkPath.setMap(map);
         });
-        landmarkPath.setMap(map);
       }
 
       // Use the Haversine formula to find distance between 2 points
