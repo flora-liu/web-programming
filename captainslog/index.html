@@ -28,6 +28,7 @@
 		            localStorage.setItem(dateTime, $('input').val());
 		            var newItem = localStorage.getItem(dateTime);
 			    	$('#log').prepend("<p> <strong>" + dateTime + " - </strong>" + newItem + "</p>");
+			    	$('input').val('');
 		    	}
 		    }
 		  });	  		
