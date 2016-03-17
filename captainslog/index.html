@@ -7,17 +7,20 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 	<script>
 	  $(document).ready(function(){
+
+	  	// Display any old entries from log
 	  	function init() {
 	  		for (i = 0; i < localStorage.length; i++) {
 	  			$('#log').prepend("<p> <strong>" + localStorage.key(i) + " - </strong>" + localStorage.getItem(localStorage.key(i)) + "</p>");
 	  		}
 	  	}
-	  	init();
 
 	  	if(localStorage) {
+	  		// If the enter key has ben pressed
 			$('input').keypress(function(e) {
 		    if (e.which == 13) {
 		    	if ($('input').val() != 0) {
+		    		// Get the current time and date
 			    	var currentdate = new Date(); 
 					var dateTime = currentdate.getDate() + "/"
 					                + (currentdate.getMonth()+1)  + "/" 
@@ -25,8 +28,10 @@
 					                + currentdate.getHours() + ":"  
 					                + currentdate.getMinutes() + ":" 
 					                + currentdate.getSeconds();
+					// Store the entry and entry date in local storage
 		            localStorage.setItem(dateTime, $('input').val());
 		            var newItem = localStorage.getItem(dateTime);
+		            // Display newest entry at the top of the log
 			    	$('#log').prepend("<p> <strong>" + dateTime + " - </strong>" + newItem + "</p>");
 			    	$('input').val('');
 		    	}
