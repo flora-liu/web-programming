@@ -1,5 +1,4 @@
 #COMP 20 Web Programming Portfolio
-## Flora Liu
 
 #####Purpose
 This repository contains all the work and learning I have done for my Web Programming class at Tufts. These projects and the corresponding technologies used include:
