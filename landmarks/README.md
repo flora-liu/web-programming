@@ -1,6 +1,5 @@
 #COMP 20 Assignment 2: Historic Landmarks
-Flora Liu
-Mar 12, 2016
+Flora Liu | Mar 12, 2016
 
 #####Summary: 
 This is a web page that will retrieve the user's current location (latitude and

@@ -1,6 +1,5 @@
 #COMP 20 Lab 6 Messages
-Flora Liu
-Mar 8, 2016
+Flora Liu | Mar 8, 2016
 
 #####Goal:
 The goal of this lab is to practice using the following:

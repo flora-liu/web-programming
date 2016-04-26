@@ -1,6 +1,5 @@
 #COMP 20 Lab: Captain's Log
-Flora Liu
-Mar 17, 2016
+Flora Liu | Mar 17, 2016
 
 #####Summary: 
 This is a web page that will take a user's input from a text field. On 

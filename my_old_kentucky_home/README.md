@@ -1,6 +1,5 @@
 #COMP 20: My Old Kentucky Home
-Flora Liu
-Mar 1, 2016
+Flora Liu | Mar 1, 2016
 
 #####Purpose:
 The goal of this lab is to practice using the following:
